@@ -67,6 +67,7 @@ public final class Bootstrap {
         String userDir = System.getProperty("user.dir");
 
         // Home first
+        // @arthinking catalina.home定义与 catalina.sh 启动脚本中
         String home = System.getProperty(Globals.CATALINA_HOME_PROP);
         File homeFile = null;
 
@@ -144,12 +145,16 @@ public final class Bootstrap {
 
     private void initClassLoaders() {
         try {
+            // @arthinking 创建commonLoader, 该classLoader负责加载所有应用会用到的jar包和class文件
             commonLoader = createClassLoader("common", null);
             if( commonLoader == null ) {
                 // no config file, default to this loader - we might be in a 'single' env.
                 commonLoader=this.getClass().getClassLoader();
             }
+            // @arthinking 创建 serverLoader, 该classLoader以 common classLoader为父加载器, 该加载器后续会通过调用
+            // Thread.currentThread().setContextClassLoader(catalinaLoader);设置为当前线程的类加载器
             catalinaLoader = createClassLoader("server", commonLoader);
+            // @arthinking 创建 sharedLoader
             sharedLoader = createClassLoader("shared", commonLoader);
         } catch (Throwable t) {
             handleThrowable(t);
@@ -161,11 +166,13 @@ public final class Bootstrap {
 
     private ClassLoader createClassLoader(String name, ClassLoader parent)
         throws Exception {
-
+        // @arthinking 从bootstrap.jar包找到 catalina.properties 文件中的 name.loader
+        // common.loader="${catalina.base}/lib","${catalina.base}/lib/*.jar","${catalina.home}/lib","${catalina.home}/lib/*.jar"
         String value = CatalinaProperties.getProperty(name + ".loader");
         if ((value == null) || (value.equals("")))
             return parent;
 
+        // @arthining 把属性中的占位符替换成实际的值
         value = replace(value);
 
         List<Repository> repositories = new ArrayList<>();
@@ -246,6 +253,9 @@ public final class Bootstrap {
 
 
     /**
+     * @arthinking 这个方法主要做如下事情:
+     *  1、创建类加载器
+     *  2、实例化 org.apache.catalina.startup.Catalina 对象, 并赋值给静态成员变量 catalinaDaemon
      * Initialize daemon.
      * @throws Exception Fatal initialization error
      */
@@ -253,6 +263,7 @@ public final class Bootstrap {
 
         initClassLoaders();
 
+        // 设置当前线程的加载器为 catalina classLoader
         Thread.currentThread().setContextClassLoader(catalinaLoader);
 
         SecurityClassLoad.securityClassLoad(catalinaLoader);
@@ -263,7 +274,9 @@ public final class Bootstrap {
         Class<?> startupClass = catalinaLoader.loadClass("org.apache.catalina.startup.Catalina");
         Object startupInstance = startupClass.getConstructor().newInstance();
 
+        // @arthinking Tomcat中有大量运行时才可以获取到的参数, 需要用反射初始化对象
         // Set the shared extensions class loader
+        // 通过反射调用 setParentClassLoader 方法, 动态设置父加载器为 sharedLoader
         if (log.isDebugEnabled())
             log.debug("Setting startup class properties");
         String methodName = "setParentClassLoader";
@@ -446,6 +459,8 @@ public final class Bootstrap {
 
 
     /**
+     * @arthinking Tomcat启动入口
+     *
      * Main method and entry point when starting Tomcat via the provided
      * scripts.
      *
@@ -453,6 +468,7 @@ public final class Bootstrap {
      */
     public static void main(String args[]) {
 
+        // @arthinking: 实例化一个 Bootstrap对象
         synchronized (daemonLock) {
             if (daemon == null) {
                 // Don't set daemon until init() has completed

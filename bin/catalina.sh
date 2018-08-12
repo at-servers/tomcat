@@ -141,10 +141,12 @@ PRGDIR=`dirname "$PRG"`
 # Copy CATALINA_BASE from CATALINA_HOME if not already set
 [ -z "$CATALINA_BASE" ] && CATALINA_BASE="$CATALINA_HOME"
 
+# @arthinking 清空classpath, 防止classpath中有tomcat启动相关类影响到tomcat的正常启动
 # Ensure that any user defined CLASSPATH variables are not used on startup,
 # but allow them to be specified in setenv.sh, in rare case when it is needed.
 CLASSPATH=
 
+# @arthinking: 执行设置运行环境脚本
 if [ -r "$CATALINA_BASE/bin/setenv.sh" ]; then
   . "$CATALINA_BASE/bin/setenv.sh"
 elif [ -r "$CATALINA_HOME/bin/setenv.sh" ]; then
@@ -186,6 +188,7 @@ if $os400; then
   export QIBM_MULTI_THREADED=Y
 fi
 
+# @arthinking: 执行设置类路径脚本
 # Get standard Java environment variables
 if $os400; then
   # -r will Only work on the os400 if the files are:
@@ -204,6 +207,7 @@ else
 fi
 
 # Add on extra jar files to CLASSPATH
+# @arthinking: 加载相关jar包到classpath中 bootstrap.jar tomcat-juli.jar
 if [ ! -z "$CLASSPATH" ] ; then
   CLASSPATH="$CLASSPATH":
 fi
@@ -253,6 +257,7 @@ JAVA_OPTS="$JAVA_OPTS $JSSE_OPTS"
 JAVA_OPTS="$JAVA_OPTS -Djava.protocol.handler.pkgs=org.apache.catalina.webresources"
 
 # Set juli LogManager config file if it is present and an override has not been issued
+# @arthinking: 日志配置
 if [ -z "$LOGGING_CONFIG" ]; then
   if [ -r "$CATALINA_BASE"/conf/logging.properties ]; then
     LOGGING_CONFIG="-Djava.util.logging.config.file=$CATALINA_BASE/conf/logging.properties"
@@ -384,6 +389,7 @@ elif [ "$1" = "run" ]; then
     eval exec "\"$_RUNJAVA\"" "\"$LOGGING_CONFIG\"" $LOGGING_MANAGER $JAVA_OPTS $CATALINA_OPTS \
       -D$ENDORSED_PROP="\"$JAVA_ENDORSED_DIRS\"" \
       -classpath "\"$CLASSPATH\"" \
+      # @arthinking: 启用Java安全管理器
       -Djava.security.manager \
       -Djava.security.policy=="\"$CATALINA_BASE/conf/catalina.policy\"" \
       -Dcatalina.base="\"$CATALINA_BASE\"" \
@@ -449,6 +455,7 @@ elif [ "$1" = "start" ] ; then
       echo "Using Security Manager"
     fi
     shift
+    # @arthinking: 调用java命令执行 org.apache.catalina.startup.Bootstrap 类的main方法, 这里系统类装载器会装载Bootstrap类
     eval $_NOHUP "\"$_RUNJAVA\"" "\"$LOGGING_CONFIG\"" $LOGGING_MANAGER $JAVA_OPTS $CATALINA_OPTS \
       -D$ENDORSED_PROP="\"$JAVA_ENDORSED_DIRS\"" \
       -classpath "\"$CLASSPATH\"" \

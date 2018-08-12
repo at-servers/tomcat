@@ -224,6 +224,8 @@ public final class ClassLoaderFactory {
                 log.debug("  location " + i + " is " + array[i]);
             }
 
+        // @arthinking AccessController.doPrivileged 绕过安全检查
+        // 关于安全管理器 SecurityManager: https://blog.csdn.net/laiwenqiang/article/details/54321588
         return AccessController.doPrivileged(
                 new PrivilegedAction<URLClassLoader>() {
                     @Override
