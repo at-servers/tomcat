@@ -133,6 +133,7 @@ public abstract class LifecycleBase implements Lifecycle {
 
         try {
             setStateInternal(LifecycleState.INITIALIZING, null, false);
+            // @arthinking 最终调用组件类实现的 initInternal() 方法
             initInternal();
             setStateInternal(LifecycleState.INITIALIZED, null, false);
         } catch (Throwable t) {
@@ -180,6 +181,7 @@ public abstract class LifecycleBase implements Lifecycle {
 
         try {
             setStateInternal(LifecycleState.STARTING_PREP, null, false);
+            // @arthinking 最终调用组件类实现的 startInternal() 方法
             startInternal();
             if (state.equals(LifecycleState.FAILED)) {
                 // This is a 'controlled' failure. The component put itself into the

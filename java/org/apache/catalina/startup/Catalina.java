@@ -536,6 +536,7 @@ public class Catalina {
         // Before digester - it may be needed
         initNaming();
 
+        // @arthinking 1、创建 Digester对象
         // Create and execute our Digester
         Digester digester = createStartDigester();
 
@@ -601,7 +602,9 @@ public class Catalina {
 
             try {
                 inputSource.setByteStream(inputStream);
+                // @arthinking 2 将当前对象压入对象栈顶
                 digester.push(this);
+                // @arthinking 3 根据 inputStream 里面的xml文件配置以及 Digester对象包含的解析规则生成对象
                 digester.parse(inputSource);
             } catch (SAXParseException spe) {
                 log.warn("Catalina.start using " + getConfigFile() + ": " +
@@ -621,6 +624,7 @@ public class Catalina {
             }
         }
 
+        // @arthinking 4
         getServer().setCatalina(this);
         getServer().setCatalinaHome(Bootstrap.getCatalinaHomeFile());
         getServer().setCatalinaBase(Bootstrap.getCatalinaBaseFile());
@@ -630,6 +634,7 @@ public class Catalina {
 
         // Start the new server
         try {
+            // @arthinking 5 调用 StandardServer的初始化方法
             getServer().init();
         } catch (LifecycleException e) {
             if (Boolean.getBoolean("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE")) {

@@ -474,6 +474,9 @@ public final class Bootstrap {
                 // Don't set daemon until init() has completed
                 Bootstrap bootstrap = new Bootstrap();
                 try {
+                    // @arthinking
+                    // 1、创建类加载器
+                    // 2、实例化 org.apache.catalina.startup.Catalina 对象, 并赋值给静态成员变量 catalinaDaemon
                     bootstrap.init();
                 } catch (Throwable t) {
                     handleThrowable(t);
@@ -503,9 +506,10 @@ public final class Bootstrap {
                 args[args.length - 1] = "stop";
                 daemon.stop();
             } else if (command.equals("start")) {
+                // @arthinking 执行load start方法
                 daemon.setAwait(true);
                 daemon.load(args);
-                daemon.start();
+                daemon. start();
                 if (null == daemon.getServer()) {
                     System.exit(1);
                 }

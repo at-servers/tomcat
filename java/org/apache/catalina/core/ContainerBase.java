@@ -938,6 +938,7 @@ public abstract class ContainerBase extends LifecycleMBeanBase
         }
 
         // Start our child containers, if any
+        // @arthiking 启动当前容器的子容器 start =======================
         Container children[] = findChildren();
         List<Future<Void>> results = new ArrayList<>();
         for (int i = 0; i < children.length; i++) {
@@ -955,6 +956,7 @@ public abstract class ContainerBase extends LifecycleMBeanBase
             }
 
         }
+        // @arthiking 启动当前容器的子容器 end =======================
         if (multiThrowable.size() > 0) {
             throw new LifecycleException(sm.getString("containerBase.threadedStartFailed"),
                     multiThrowable.getThrowable());
